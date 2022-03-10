@@ -43,7 +43,7 @@ class TestBestSplit(unittest.TestCase):
     tree = DescisionTree()
     expected = 'col2'
 
-    (_, arg_name, _, _) =  tree._best_split(target, df)
+    (_, arg_name, _, _) =  tree._best_split(df, target)
 
     self.assertEqual(expected, arg_name)
 
@@ -55,7 +55,7 @@ class TestBestSplit(unittest.TestCase):
     tree = DescisionTree()
     expected = 2
 
-    (_, _, val, _) =  tree._best_split(target, df)
+    (_, _, val, _) =  tree._best_split(df, target)
 
     self.assertEqual(expected, val)
 

@@ -41,7 +41,7 @@ class DescisionTree:
       pred = make_prediction(target)
       return Leaf(pred)
     
-    (ig, attr_name, vals, is_numeric) = self._best_split(target, data)
+    (ig, attr_name, vals, is_numeric) = self._best_split(data, target)
 
     best_attr = data.pop(attr_name)
 
@@ -65,13 +65,15 @@ class DescisionTree:
     return depth == self.max_depth or \
       contains_one_type(target) or isEmpty(data)
 
-  def _best_split(self, target, data):
-    col_list = data.columns
+  def _best_split(self, data, target):
     best_ig = 0
     best_val = None
     best_is_numeric = None
     best_arg_name = None
-    for col in col_list:
+
+    columns = data.columns
+
+    for col in columns:
       attribute = data[col]
       (ig, val, is_numeric) = information_gain(target, attribute)
       if ig > best_ig:
@@ -83,6 +85,10 @@ class DescisionTree:
     return (best_ig, best_arg_name, best_val, best_is_numeric)
   
   def _make_split(self, target, attribute, val, is_numeric):
+    '''
+      val: int representing best split value for numeric attribute IF is_numeric = true
+      val: list representing all values in categorical attribute IF is_numeric = false
+    '''
     data_splits = []
 
     if is_numeric:
