@@ -1,6 +1,8 @@
 from tokenize import Double
+from typing import Tuple
 import numpy as np
 import pandas as pd
+from typing import Union
 
 def gte(a, b) -> bool:
   return a >= b
@@ -16,21 +18,22 @@ def entropy(ser) -> float:
   E = ( -pb * np.log2(pb) ).sum()
   return round(E, 4)
 
-def split(target, attribute, split_val, exp):
-    mask = exp(attribute, split_val)
-    target_split = target.loc[mask]
-    return target_split
+def ljoin_filter(target, attribute, split_val, exp) -> pd.Series:
+  mask = exp(attribute, split_val)
+  target_split = target.loc[mask]
+  return target_split
 
-def target_after_split(target, attribute, split_val, exp):
-  target_split = split(target, attribute, split_val, exp)
-  m = target_split.shape[0]
-  return (target_split, m)
+def ljoin_filter_count(target, attribute, split_val, exp) -> Tuple[pd.Series, int]:
+  target_split = ljoin_filter(target, attribute, split_val, exp)
+  count = target_split.shape[0]
+  return (target_split, count)
 
-def information_gain_cat(target, attribute):
+def information_gain_cat(target, attribute) -> Tuple[float, np.array]:
   E_target = entropy(target)
   n = attribute.shape[0]
   values = attribute.unique()
   sum = 0
+  
   for val in values:
     target_after = target.loc[attribute == val]
     m = target_after.shape[0]
@@ -40,14 +43,14 @@ def information_gain_cat(target, attribute):
   ig = round(ig, 4)
   return (ig, values)
 
-def information_gain_split(E_target, target, attribute, split_val, n):
-  (target_lt, m_lt) = target_after_split(target, attribute, split_val, lt)
-  (target_gte, m_gte) = target_after_split(target, attribute, split_val, gte)
+def information_gain_split(E_target, target, attribute, split_val, n) -> float:
+  (target_lt, m_lt) = ljoin_filter_count(target, attribute, split_val, lt)
+  (target_gte, m_gte) = ljoin_filter_count(target, attribute, split_val, gte)
   sum = (m_lt/n) * entropy(target_lt)
   sum += (m_gte/n) * entropy(target_gte)
   return E_target - sum
 
-def information_gain_num(target, attribute):
+def information_gain_num(target, attribute) -> Tuple[float, Union[int, list]]:
   E_target = entropy(target)
   n = attribute.shape[0]
   values = attribute.unique()
@@ -60,7 +63,7 @@ def information_gain_num(target, attribute):
 
   return (best_ig, best_val)
 
-def information_gain(target, attribute):
+def information_gain(target, attribute) -> Tuple[float, Union[int, list], bool]:
   if attribute.dtype == 'O':
     (ig, val) = information_gain_cat(target, attribute)
     is_numeric = False

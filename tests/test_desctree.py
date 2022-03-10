@@ -34,7 +34,7 @@ class TestDescisionTree(unittest.TestCase):
     self.assertEqual(expected, prediction)
 
 
-class TestBestSplit(unittest.TestCase):
+class TestBestSplitValue(unittest.TestCase):
   def test_whenSecondArgIsBest_returnsCorrectArgName(self):
     attribute_data = {'col1': [1,2,1,2,1], 'col2':['x','y','x','x','x']} 
     target_data = ['a','a','b','b','b']
@@ -43,7 +43,7 @@ class TestBestSplit(unittest.TestCase):
     tree = DescisionTree()
     expected = 'col2'
 
-    (_, arg_name, _, _) =  tree._best_split(df, target)
+    (_, arg_name, _, _) =  tree._best_split_value(df, target)
 
     self.assertEqual(expected, arg_name)
 
@@ -55,7 +55,7 @@ class TestBestSplit(unittest.TestCase):
     tree = DescisionTree()
     expected = 2
 
-    (_, _, val, _) =  tree._best_split(df, target)
+    (_, _, val, _) =  tree._best_split_value(df, target)
 
     self.assertEqual(expected, val)
 

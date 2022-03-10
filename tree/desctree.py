@@ -41,7 +41,7 @@ class DescisionTree:
       pred = make_prediction(target)
       return Leaf(pred)
     
-    (ig, attr_name, vals, is_numeric) = self._best_split(data, target)
+    (ig, attr_name, vals, is_numeric) = self._best_split_value(data, target)
 
     best_attr = data.pop(attr_name)
 
@@ -65,7 +65,7 @@ class DescisionTree:
     return depth == self.max_depth or \
       contains_one_type(target) or isEmpty(data)
 
-  def _best_split(self, data, target):
+  def _best_split_value(self, data, target):
     best_ig = 0
     best_val = None
     best_is_numeric = None
@@ -92,14 +92,14 @@ class DescisionTree:
     data_splits = []
 
     if is_numeric:
-      target_lt = split(target, attribute, val, lt)
-      target_gte = split(target, attribute, val, gte)
+      target_lt = ljoin_filter(target, attribute, val, lt)
+      target_gte = ljoin_filter(target, attribute, val, gte)
       data_splits.append({'data': target_lt, 'exp': lt, 'val': val})
       data_splits.append({'data': target_gte, 'exp': gte, 'val': val})
 
     else:
       for cat in val:
-        target_split = split(target, attribute, cat, eq)
+        target_split = ljoin_filter(target, attribute, cat, eq)
         data_splits.append({'data': target_split, 'exp': eq, 'val': cat})
 
     return data_splits
