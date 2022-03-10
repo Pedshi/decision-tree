@@ -34,7 +34,7 @@ class TestDescisionTree(unittest.TestCase):
     self.assertEqual(expected, prediction)
 
 
-class TestBestSplitValue(unittest.TestCase):
+class TestBestSplit(unittest.TestCase):
   def test_whenSecondArgIsBest_returnsCorrectArgName(self):
     attribute_data = {'col1': [1,2,1,2,1], 'col2':['x','y','x','x','x']} 
     target_data = ['a','a','b','b','b']

@@ -1,9 +1,16 @@
 import numpy as np
-from tree.node import Node
-from tree.branch import Branch
-from tree.leaf import Leaf
-from tree.util import *
 import pandas as pd
+
+if __name__ == '__main__':
+  from node import Node
+  from branch import Branch
+  from leaf import Leaf
+  from util import *
+else:
+  from tree.node import Node
+  from tree.branch import Branch
+  from tree.leaf import Leaf
+  from tree.util import *
 
 def make_prediction(target):
   if target.dtype == 'O':
@@ -128,5 +135,5 @@ class DescisionTree:
       return
     for branch in node.branchs:
       print(f'{node.attr_name} -- {branch.val} {branch.exp.__name__} --> ', end='')
-      self.print_tree(branch.child)
+      self._print_tree(branch.child)
       print('------')
