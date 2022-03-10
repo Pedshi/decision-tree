@@ -9,7 +9,7 @@ class TestDescisionTree(unittest.TestCase):
     train_x = pd.DataFrame(data=attribute_data)
     target = pd.Series(data=target_data)
     tree = DescisionTree()
-    tree.train(target, train_x)
+    tree.train(train_x, target)
     predict_data = {'col1': [1], 'col2':['x']}
     predict_x = pd.DataFrame(data=predict_data)
     expected = 'b'
@@ -24,7 +24,7 @@ class TestDescisionTree(unittest.TestCase):
     train_x = pd.DataFrame(data=attribute_data)
     target = pd.Series(data=target_data)
     tree = DescisionTree()
-    tree.train(target, train_x)
+    tree.train(train_x, target)
     predict_data = {'col1': [3], 'col2':['x']}
     predict_x = pd.DataFrame(data=predict_data)
     expected = 'a'

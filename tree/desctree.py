@@ -24,44 +24,47 @@ def contains_one_type(target):
 def isEmpty(data):
   return data.empty
 
+
 class DescisionTree:
 
   def __init__(self, max_depth=None):
     self.max_depth = max_depth
     self.root = None
 
-  def train(self, target, training):
-    self.root = self._train_tree(target, training, 0)
+  def train(self, data, target):
+    self.root = self._train_tree(data, target, 0)
 
-  def _train_tree(self, target, training, depth):
+  def _train_tree(self, data, target, depth):
     if isEmpty(target):
       return None
-
-    if depth == self.max_depth or contains_one_type(target):
-      pred = make_prediction(target)
-      return Leaf(pred)
-
-    if isEmpty(training):
+    if self.shouldPredict(data, target, depth):
       pred = make_prediction(target)
       return Leaf(pred)
     
-    (ig, attr_name, vals, is_numeric) = self._best_split(target, training)
+    (ig, attr_name, vals, is_numeric) = self._best_split(target, data)
 
-    best_attr = training[attr_name]
-    #remove column from training data
-    training = training.drop(attr_name, axis=1)
+    best_attr = data.pop(attr_name)
 
     target_splits = self._make_split(target, best_attr, vals, is_numeric)
+
     node = Node(ig, attr_name)
+
     for split in target_splits:
       branch = Branch(split['val'], split['exp'])
-      child = self._train_tree(split['data'], training, depth - 1)
+      child = self._train_tree(data, split['data'], depth - 1)
+
       if child == None:
         continue
+
       branch.child = child
       node.addBranch(branch)
+
     return node
   
+  def shouldPredict(self, data, target, depth):
+    return depth == self.max_depth or \
+      contains_one_type(target) or isEmpty(data)
+
   def _best_split(self, target, data):
     col_list = data.columns
     best_ig = 0
