@@ -15,8 +15,13 @@ def eq(a, b) -> bool:
 
 def entropy(ser) -> float:
   pb = ser.value_counts() / ser.shape[0]
-  E = ( -pb * np.log2(pb) ).sum()
+  E = (-pb * np.log2(pb)).sum()
   return round(E, 4)
+
+def gini_impurity(ser) -> float:
+  pb = ser.value_counts() / ser.shape[0]
+  G = (pb * (1-pb)).sum()
+  return round(G, 4)
 
 def ljoin_filter(target, attribute, split_val, exp) -> pd.Series:
   mask = exp(attribute, split_val)

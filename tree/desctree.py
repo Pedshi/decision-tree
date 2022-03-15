@@ -31,7 +31,11 @@ def contains_one_type(target):
 def isEmpty(data):
   return data.empty
 
-
+'''
+1. Add Gini impurity as option
+2. Add min. purity per split option
+3. Add pruning after training
+'''
 class DescisionTree:
 
   def __init__(self, max_depth=None):
