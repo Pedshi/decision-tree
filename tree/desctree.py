@@ -1,143 +1,147 @@
-import numpy as np
-import pandas as pd
-
 if __name__ == '__main__':
-  from node import Node
-  from branch import Branch
-  from leaf import Leaf
-  from util import *
+    from node import Node
+    from branch import Branch
+    from leaf import Leaf
+    from util import *
 else:
-  from tree.node import Node
-  from tree.branch import Branch
-  from tree.leaf import Leaf
-  from tree.util import *
+    from tree.node import Node
+    from tree.branch import Branch
+    from tree.leaf import Leaf
+    from tree.util import *
+
 
 def make_prediction(target):
-  if target.dtype == 'O':
-    return predict_categorical(target)
-  else:
-    return predict_regression(target)
+    if target.dtype == 'O':
+        return predict_categorical(target)
+    else:
+        return predict_regression(target)
+
 
 def predict_categorical(target):
-  target_freq = target.value_counts().sort_values(ascending=False)
-  return target_freq.index[0]
+    target_freq = target.value_counts().sort_values(ascending=False)
+    return target_freq.index[0]
+
 
 def predict_regression(target):
-  return target.mean()
+    return target.mean()
+
 
 def contains_one_type(target):
-  return target.unique().shape[0] == 1
+    return target.unique().shape[0] == 1
+
 
 def isEmpty(data):
-  return data.empty
+    return data.empty
 
-'''
+"""
 1. Add Gini impurity as option
 2. Add min. purity per split option
 3. Add pruning after training
-'''
+"""
+
+
 class DescisionTree:
 
-  def __init__(self, max_depth=None):
-    self.max_depth = max_depth
-    self.root = None
+    def __init__(self, max_depth=None):
+        self.max_depth = max_depth
+        self.root = None
 
-  def train(self, data, target):
-    self.root = self._train_tree(data, target, 0)
+    def train(self, data, target):
+        self.root = self._train_tree(data, target, 0)
 
-  def _train_tree(self, data, target, depth):
-    if isEmpty(target):
-      return None
-    if self.shouldPredict(data, target, depth):
-      pred = make_prediction(target)
-      return Leaf(pred)
-    
-    (ig, attr_name, vals, is_numeric) = self._best_split_value(data, target)
+    def _train_tree(self, data, target, depth):
+        if isEmpty(target):
+            return None
+        if self.shouldPredict(data, target, depth):
+            pred = make_prediction(target)
+            return Leaf(pred)
 
-    best_attr = data.pop(attr_name)
+        (ig, attr_name, vals, is_numeric) = self._best_split_value(data, target)
 
-    target_splits = self._make_split(target, best_attr, vals, is_numeric)
+        best_attr = data.pop(attr_name)
 
-    node = Node(ig, attr_name)
+        target_splits = self._make_split(target, best_attr, vals, is_numeric)
 
-    for split in target_splits:
-      branch = Branch(split['val'], split['exp'])
-      child = self._train_tree(data, split['data'], depth - 1)
+        node = Node(ig, attr_name)
 
-      if child == None:
-        continue
+        for split in target_splits:
+            branch = Branch(split['val'], split['exp'])
+            child = self._train_tree(data, split['data'], depth - 1)
 
-      branch.child = child
-      node.addBranch(branch)
+            if child is None:
+                continue
 
-    return node
-  
-  def shouldPredict(self, data, target, depth):
-    return depth == self.max_depth or \
-      contains_one_type(target) or isEmpty(data)
+            branch.child = child
+            node.addBranch(branch)
 
-  def _best_split_value(self, data, target):
-    best_ig = 0
-    best_val = None
-    best_is_numeric = None
-    best_arg_name = None
+        return node
 
-    columns = data.columns
+    def shouldPredict(self, data, target, depth):
+        return depth == self.max_depth or \
+               contains_one_type(target) or isEmpty(data)
 
-    for col in columns:
-      attribute = data[col]
-      (ig, val, is_numeric) = information_gain(target, attribute)
-      if ig > best_ig:
-        best_ig = ig
-        best_val = val
-        best_is_numeric = is_numeric
-        best_arg_name = col
+    def _best_split_value(self, data, target):
+        best_ig = 0
+        best_val = None
+        best_is_numeric = None
+        best_arg_name = None
 
-    return (best_ig, best_arg_name, best_val, best_is_numeric)
-  
-  def _make_split(self, target, attribute, val, is_numeric):
-    '''
-      val: int representing best split value for numeric attribute IF is_numeric = true
-      val: list representing all values in categorical attribute IF is_numeric = false
-    '''
-    data_splits = []
+        columns = data.columns
 
-    if is_numeric:
-      target_lt = ljoin_filter(target, attribute, val, lt)
-      target_gte = ljoin_filter(target, attribute, val, gte)
-      data_splits.append({'data': target_lt, 'exp': lt, 'val': val})
-      data_splits.append({'data': target_gte, 'exp': gte, 'val': val})
+        for col in columns:
+            attribute = data[col]
+            (ig, val, is_numeric) = information_gain(target, attribute)
+            if ig > best_ig:
+                best_ig = ig
+                best_val = val
+                best_is_numeric = is_numeric
+                best_arg_name = col
 
-    else:
-      for cat in val:
-        target_split = ljoin_filter(target, attribute, cat, eq)
-        data_splits.append({'data': target_split, 'exp': eq, 'val': cat})
+        return best_ig, best_arg_name, best_val, best_is_numeric
 
-    return data_splits
-  
-  def predict(self, data):
-    return self._predict(data, self.root)
+    def _make_split(self, target, attribute, val, is_numeric):
+        """
+          val: int representing best split value for numeric attribute IF is_numeric = true
+          val: list representing all values in categorical attribute IF is_numeric = false
+        """
+        data_splits = []
 
-  def _predict(self, data, node):
-    if isinstance(node, Leaf):
-      return node.prediction
+        if is_numeric:
+            target_lt = ljoin_filter(target, attribute, val, lt)
+            target_gte = ljoin_filter(target, attribute, val, gte)
+            data_splits.append({'data': target_lt, 'exp': lt, 'val': val})
+            data_splits.append({'data': target_gte, 'exp': gte, 'val': val})
 
-    val = data[node.attr_name].iloc[0]
+        else:
+            for cat in val:
+                target_split = ljoin_filter(target, attribute, cat, eq)
+                data_splits.append({'data': target_split, 'exp': eq, 'val': cat})
 
-    for branch in node.branchs:
-      if branch.exp(val, branch.val):
-        return self._predict(data, branch.child)
+        return data_splits
 
-    return None
+    def predict(self, data):
+        return self._predict(data, self.root)
 
-  def print_tree(self):
-    self._print_tree(self.root)
+    def _predict(self, data, node):
+        if isinstance(node, Leaf):
+            return node.prediction
 
-  def _print_tree(self, node):
-    if (isinstance(node, Leaf)):
-      print(f'Pred: {node.prediction}')
-      return
-    for branch in node.branchs:
-      print(f'{node.attr_name} -- {branch.val} {branch.exp.__name__} --> ', end='')
-      self._print_tree(branch.child)
-      print('------')
+        val = data[node.attr_name].iloc[0]
+
+        for branch in node.branchs:
+            if branch.exp(val, branch.val):
+                return self._predict(data, branch.child)
+
+        return None
+
+    def print_tree(self):
+        self._print_tree(self.root)
+
+    def _print_tree(self, node):
+        if isinstance(node, Leaf):
+            print(f'Pred: {node.prediction}')
+            return
+        for branch in node.branchs:
+            print(f'{node.attr_name} -- {branch.val} {branch.exp.__name__} --> ', end='')
+            self._print_tree(branch.child)
+            print('------')
