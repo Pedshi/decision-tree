@@ -26,8 +26,20 @@ def entropy(ser) -> float:
 def gini_impurity(ser) -> float:
     """Return gini impurity for series"""
     pb = ser.value_counts() / ser.shape[0]
-    gini = (pb * (1-pb)).sum()
+    gini = 1 - (pb**2).sum()
     return round(gini, 4)
+
+
+def information_gain_2(e_target, target, attribute, split_val, n, cost_func) -> float:
+    """
+    Return information gain for target split in lower and
+    larger split of split_val
+    """
+    (target_lt, m_lt) = ljoin_filter_count(target, attribute, split_val, lt)
+    (target_gte, m_gte) = ljoin_filter_count(target, attribute, split_val, gte)
+    tot = (m_lt / n) * entropy(target_lt)
+    tot += (m_gte / n) * entropy(target_gte)
+    return e_target - tot
 
 
 def ljoin_filter(target, attribute, split_val, exp) -> pd.Series:
