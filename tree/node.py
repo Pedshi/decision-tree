@@ -4,5 +4,5 @@ class Node:
         self.attr_name = attr_name
         self.branchs = list()
 
-    def addBranch(self, branch):
+    def add_branch(self, branch):
         self.branchs.append(branch)

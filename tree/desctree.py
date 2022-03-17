@@ -30,7 +30,7 @@ def contains_one_type(target):
     return target.unique().shape[0] == 1
 
 
-def isEmpty(data):
+def is_empty(data):
     return data.empty
 
 """
@@ -40,7 +40,7 @@ def isEmpty(data):
 """
 
 
-class DescisionTree:
+class DecisionTree:
 
     def __init__(self, max_depth=None):
         self.max_depth = max_depth
@@ -50,9 +50,9 @@ class DescisionTree:
         self.root = self._train_tree(data, target, 0)
 
     def _train_tree(self, data, target, depth):
-        if isEmpty(target):
+        if is_empty(target):
             return None
-        if self.shouldPredict(data, target, depth):
+        if self.should_predict(data, target, depth):
             pred = make_prediction(target)
             return Leaf(pred)
 
@@ -72,13 +72,13 @@ class DescisionTree:
                 continue
 
             branch.child = child
-            node.addBranch(branch)
+            node.add_branch(branch)
 
         return node
 
-    def shouldPredict(self, data, target, depth):
+    def should_predict(self, data, target, depth):
         return depth == self.max_depth or \
-               contains_one_type(target) or isEmpty(data)
+               contains_one_type(target) or is_empty(data)
 
     def _best_split_value(self, data, target):
         best_ig = 0
