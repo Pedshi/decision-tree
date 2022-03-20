@@ -75,25 +75,5 @@ class TestInformationGain(unittest.TestCase):
         self.assertEqual(expected, ig)
 
 
-class TestGiniImpurity(unittest.TestCase):
-    def test_whenNumericValues_returnsCorrectGini(self):
-        data = [1, 2, 2, 2, 2, 2]
-        ser = pd.Series(data=data)
-        expected = 0.2778
-
-        G = gini_impurity(ser)
-
-        self.assertEqual(expected, G)
-
-    def test_whenCategoricValues_returnsCorrectGini(self):
-        data = ['a', 'b', 'b', 'c', 'c']
-        ser = pd.Series(data=data)
-        expected = 0.64
-
-        gini = gini_impurity(ser)
-
-        self.assertEqual(expected, gini)
-
-
 if __name__ == '__main__':
     unittest.main()
