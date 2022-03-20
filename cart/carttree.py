@@ -1,8 +1,16 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, TypedDict, Callable, List
+
+import pandas as pd
 from tree.node import Node
 from tree.branch import Branch
 from tree.leaf import Leaf
 from cart.cart_utils import *
+
+
+class SplitWithInfo(TypedDict):
+    data: pd.Series
+    exp: Callable
+    val: Union[float, str]
 
 
 class CARTTree:
@@ -15,6 +23,8 @@ class CARTTree:
         self.root = self._train_tree(data, target, 0)
 
     def _train_tree(self, data, target, depth):
+        """Recursively create subtrees that maximizes purity of target """
+
         if is_empty(target):
             return None
         if self.should_predict(data, target, depth):
@@ -41,16 +51,17 @@ class CARTTree:
 
         return node
 
-    def should_predict(self, data, target, depth):
+    def should_predict(self, data, target, depth) -> bool:
+        """Return true if any of stop criterias are reached else false"""
         return depth == self.max_depth or \
                contains_one_type(target) or is_empty(data)
 
     def _best_split(self, data, target) -> \
             Tuple[float, str, Union[float, str], bool]:
-        """Return the value, attribute name and purity of the attribute with lowest purity
+        """Return the value, attribute name and purity of the attribute with lowest impurity
 
-        Finds the val with highest purity for each atrribute and compares
-        to pick the one with highest purity
+        Finds the val with lowest impurity for each atrribute and compares
+        to pick the one with lowest impurity.
         """
         least_impure = 1
         best_val = None
@@ -70,11 +81,9 @@ class CARTTree:
 
         return least_impure, best_arg_name, best_val, best_is_numeric
 
-    def _make_split(self, target, attribute, val, is_numeric):
-        """
-          val: int representing best split value for numeric attribute IF is_numeric = true
-          val: list representing all values in categorical attribute IF is_numeric = false
-        """
+    def _make_split(self, target, attribute, val, is_numeric: bool) -> List[SplitWithInfo]:
+        """Split target into two on val"""
+
         data_splits = []
 
         if is_numeric:
@@ -113,10 +122,14 @@ class CARTTree:
 
         return gini, best_val, is_numeric
 
-    def predict(self, data):
+    def predict(self, data) -> Union[float, str]:
+        """Predict target for data"""
         return self._predict(data, self.root)
 
-    def _predict(self, data, node):
+    def _predict(self, data, node) -> Union[float, str]:
+        """Recursively follows conditions in branchs to find
+        prediction, starting at node"""
+
         if isinstance(node, Leaf):
             return node.prediction
 
@@ -128,10 +141,10 @@ class CARTTree:
 
         return None
 
-    def print_tree(self):
+    def print_tree(self) -> None:
         self._print_tree(self.root)
 
-    def _print_tree(self, node):
+    def _print_tree(self, node) -> None:
         if isinstance(node, Leaf):
             print(f'Pred: {node.prediction}')
             return
