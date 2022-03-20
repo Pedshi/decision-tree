@@ -35,19 +35,19 @@ class TestLjoinFilter(unittest.TestCase):
 
 
 class TestGiniIndex(unittest.TestCase):
-    def test_NumericAttribute_Returns2AsBestValue(self):
+    def test_NumericAttribute_ReturnsCorrectGini(self):
         attribute = pd.Series(data=[2, 2, 1, 3])
-        target = pd.Series(data=['a', 'a', 'b', 'b'])
-        expected = 0.6667
+        target = pd.Series(data=['a', 'a', 'a', 'b'])
+        expected = 0
 
         gini = gini_index(target, attribute, 2, lte, gt)
 
         self.assertEqual(expected, gini)
 
-    def test_CategoricAttribute_ReturnsCorrectIg(self):
+    def test_CategoricAttribute_ReturnsCorrectGini(self):
         attribute = pd.Series(data=['x', 'z', 'x', 'z', 'z'])
-        target = pd.Series(data=['a', 'a', 'b', 'b', 'b'])
-        expected = 0.5334
+        target = pd.Series(data=['a', 'b', 'a', 'b', 'c'])
+        expected = 0.2666
 
         gini = gini_index(target, attribute, 'x', eq, neq)
 
