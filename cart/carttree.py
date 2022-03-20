@@ -89,12 +89,7 @@ class CARTTree:
 
         data_splits = []
 
-        if is_numeric:
-            l_exp = lte
-            r_exp = gt
-        else:
-            l_exp = eq
-            r_exp = neq
+        l_exp, r_exp = self._get_exp(is_numeric)
 
         target_l = ljoin_filter(target, attribute, val, l_exp)
         target_r = ljoin_filter(target, attribute, val, r_exp)
@@ -109,12 +104,7 @@ class CARTTree:
 
         is_numeric = attribute.dtype == 'O'
 
-        if is_numeric:
-            l_exp = lte
-            r_exp = gt
-        else:
-            l_exp = eq
-            r_exp = neq
+        l_exp, r_exp = self._get_exp(is_numeric)
 
         best_gini = 1
         best_val = None
@@ -125,6 +115,18 @@ class CARTTree:
                 best_val = val
 
         return gini, best_val, is_numeric
+
+    def _get_exp(self, is_numeric) -> Tuple[Callable, Callable]:
+        """Return expression for splitting target"""
+
+        if is_numeric:
+            l_exp = lte
+            r_exp = gt
+        else:
+            l_exp = eq
+            r_exp = neq
+
+        return l_exp, r_exp
 
     def predict(self, data: pd.DataFrame) -> Union[float, str]:
         """Predict target for data"""
