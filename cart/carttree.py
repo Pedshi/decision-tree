@@ -31,13 +31,13 @@ class CARTTree:
             pred = make_prediction(target)
             return Leaf(pred)
 
-        (ig, attr_name, vals, is_numeric) = self._best_split(data, target)
+        (impurity, attr_name, vals, is_numeric) = self._best_split(data, target)
 
         best_attr = data.pop(attr_name)
 
         target_splits = self._make_split(target, best_attr, vals, is_numeric)
 
-        node = Node(ig, attr_name)
+        node = Node(impurity, attr_name)
 
         for split in target_splits:
             branch = Branch(split['val'], split['exp'])
