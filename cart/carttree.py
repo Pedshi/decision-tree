@@ -1,8 +1,11 @@
+from typing import Tuple, Union
 from tree.node import Node
 from tree.branch import Branch
 from tree.leaf import Leaf
+from cart.cart_utils import *
 
-class DecisionTree:
+
+class CARTTree:
 
     def __init__(self, max_depth=None):
         self.max_depth = max_depth
@@ -18,7 +21,7 @@ class DecisionTree:
             pred = make_prediction(target)
             return Leaf(pred)
 
-        (ig, attr_name, vals, is_numeric) = self._best_split_value(data, target)
+        (ig, attr_name, vals, is_numeric) = self._best_split(data, target)
 
         best_attr = data.pop(attr_name)
 
@@ -42,8 +45,14 @@ class DecisionTree:
         return depth == self.max_depth or \
                contains_one_type(target) or is_empty(data)
 
-    def _best_split_value(self, data, target):
-        best_ig = 0
+    def _best_split(self, data, target) -> \
+            Tuple[float, str, Union[float, str], bool]:
+        """Return the value, attribute name and purity of the attribute with lowest purity
+
+        Finds the val with highest purity for each atrribute and compares
+        to pick the one with highest purity
+        """
+        least_impure = 1
         best_val = None
         best_is_numeric = None
         best_arg_name = None
@@ -52,14 +61,14 @@ class DecisionTree:
 
         for col in columns:
             attribute = data[col]
-            (ig, val, is_numeric) = information_gain(target, attribute)
-            if ig > best_ig:
-                best_ig = ig
+            (impure, val, is_numeric) = self._best_split_value(target, attribute)
+            if impure < least_impure:
+                least_impure = impure
                 best_val = val
                 best_is_numeric = is_numeric
                 best_arg_name = col
 
-        return best_ig, best_arg_name, best_val, best_is_numeric
+        return least_impure, best_arg_name, best_val, best_is_numeric
 
     def _make_split(self, target, attribute, val, is_numeric):
         """
@@ -69,17 +78,40 @@ class DecisionTree:
         data_splits = []
 
         if is_numeric:
-            target_lt = ljoin_filter(target, attribute, val, lt)
-            target_gte = ljoin_filter(target, attribute, val, gte)
-            data_splits.append({'data': target_lt, 'exp': lt, 'val': val})
-            data_splits.append({'data': target_gte, 'exp': gte, 'val': val})
-
+            l_exp = lte
+            r_exp = gt
         else:
-            for cat in val:
-                target_split = ljoin_filter(target, attribute, cat, eq)
-                data_splits.append({'data': target_split, 'exp': eq, 'val': cat})
+            l_exp = eq
+            r_exp = neq
+
+        target_l = ljoin_filter(target, attribute, val, l_exp)
+        target_r = ljoin_filter(target, attribute, val, r_exp)
+        data_splits.append({'data': target_l, 'exp': l_exp, 'val': val})
+        data_splits.append({'data': target_r, 'exp': r_exp, 'val': val})
 
         return data_splits
+
+    def _best_split_value(self, target, attribute) -> Tuple[float, Union[float, str], bool]:
+        """Return value with the lowest gini_index"""
+
+        is_numeric = attribute.dtype == 'O'
+
+        if is_numeric:
+            l_exp = lte
+            r_exp = gt
+        else:
+            l_exp = eq
+            r_exp = neq
+
+        best_gini = 1
+        best_val = None
+        for val in attribute:
+            gini = gini_index(target, attribute, val, l_exp, r_exp)
+            if gini < best_gini:
+                best_gini = gini
+                best_val = val
+
+        return gini, best_val, is_numeric
 
     def predict(self, data):
         return self._predict(data, self.root)

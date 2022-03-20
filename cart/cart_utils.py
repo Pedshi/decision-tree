@@ -56,26 +56,4 @@ def gini_index(target, attribute, val, l_exp, r_exp) -> float:
     return round(tot, 4)
 
 
-def best_split_value(target, attribute) -> Tuple[float, Union[float, str], bool]:
-    """Return value with lowest that gives lowest gini_index"""
-
-    is_numeric = attribute.dtype == 'O'
-
-    if is_numeric:
-        l_exp = lte
-        r_exp = gt
-    else:
-        l_exp = eq
-        r_exp = neq
-
-    best_gini = 1
-    best_val = None
-    for val in attribute:
-        gini = gini_index(target, attribute, val, l_exp, r_exp)
-        if gini > best_gini:
-            best_gini = gini
-            best_val = val
-
-    return gini, best_val, is_numeric
-
 
